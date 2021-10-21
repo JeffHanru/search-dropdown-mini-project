@@ -8,7 +8,14 @@ import {
   SelectedFlagWrapper,
 } from "../styles/input-dropdown";
 import { useDispatch } from "react-redux";
-import { filter, toLower, includes, defaultTo, isEmpty } from "ramda";
+import {
+  filter,
+  toLower,
+  includes,
+  defaultTo,
+  isEmpty,
+  sort,
+} from "ramda";
 import { get } from "partial.lenses";
 
 function CountriesInputDropdown(props) {
@@ -16,7 +23,9 @@ function CountriesInputDropdown(props) {
     ui: { displayDropdown },
   } = props;
   const dispatch = useDispatch();
-  const filterCountries = getFilteredCountries();
+  const filterCountries = sort((a, b) => {
+    return a.name.common.localeCompare(b.name.common);
+  })(getFilteredCountries());
   const selectCountryName = get(["name", "common"], props.selectedCountry);
 
   const wrapperRef = useRef(null);
@@ -93,7 +102,11 @@ function CountriesInputDropdown(props) {
   function useClickOutside(ref) {
     useEffect(() => {
       function handleClickOutside(event) {
-        if (ref.current && !ref.current.contains(event.target) && displayDropdown) {
+        if (
+          ref.current &&
+          !ref.current.contains(event.target) &&
+          displayDropdown
+        ) {
           dispatch(props.closeDropdown());
         }
       }
@@ -101,6 +114,7 @@ function CountriesInputDropdown(props) {
       return () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
+      // eslint-disable-next-line
     }, [ref, displayDropdown]);
   }
 }
